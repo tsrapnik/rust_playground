@@ -1,42 +1,48 @@
-trait Printer {
-    fn print(&self);
+use iced::{
+    widget::{button, column, text},
+    Element, Sandbox, Settings,
+};
+struct Counter {
+    value: i32,
 }
 
-struct A {}
-impl Printer for A {
-    fn print(&self) {
-        println!("A");
+#[derive(Debug, Clone, Copy)]
+pub enum Message {
+    IncrementPressed,
+    DecrementPressed,
+}
+
+impl Sandbox for Counter {
+    type Message = Message;
+
+    fn new() -> Self {
+        Self { value: 0 }
     }
-}
-struct B {}
-impl Printer for B {
-    fn print(&self) {
-        println!("B");
+
+    fn title(&self) -> String {
+        String::from("test application")
     }
-}
 
-fn do_print0(p: &impl Printer) {
-    p.print();
-}
+    fn view(&self) -> Element<Message> {
+        column!(
+            button("+").on_press(Message::IncrementPressed),
+            text(self.value).size(50),
+            button("-").on_press(Message::DecrementPressed),
+        ).into()
+    }
 
-fn do_print1<T: Printer>(p: &T) {
-    p.print();
-}
-
-fn do_print2<T>(p: &T)
-where
-    T: Printer,
-{
-    p.print();
+    fn update(&mut self, message: Message) {
+        match message {
+            Message::IncrementPressed => {
+                self.value += 1;
+            }
+            Message::DecrementPressed => {
+                self.value -= 1;
+            }
+        }
+    }
 }
 
 fn main() {
-    let a = A {};
-    let b = B {};
-    do_print0(&a);
-    do_print0(&b);
-    do_print1(&a);
-    do_print1(&b);
-    do_print2(&a);
-    do_print2(&b);
+    Counter::run(Settings::default()).unwrap();
 }
