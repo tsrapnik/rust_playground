@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, column, text},
+    widget::{button, column, radio, text},
     Element, Sandbox, Settings,
 };
 struct Counter {
@@ -28,7 +28,11 @@ impl Sandbox for Counter {
             button("+").on_press(Message::IncrementPressed),
             text(self.value).size(50),
             button("-").on_press(Message::DecrementPressed),
-        ).into()
+            radio(String::from("label"), true, None, |_x| {
+                Message::DecrementPressed
+            }),
+        )
+        .into()
     }
 
     fn update(&mut self, message: Message) {
