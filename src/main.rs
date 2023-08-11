@@ -1,22 +1,27 @@
 use iced::{
-    widget::{button, column, radio, text},
+    widget::{button, column, radio, text, text_input, text_input::StyleSheet},
     Element, Sandbox, Settings,
 };
 struct Counter {
     value: i32,
+    s: String,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Message {
     IncrementPressed,
     DecrementPressed,
+    InputReceived(String),
 }
 
 impl Sandbox for Counter {
     type Message = Message;
 
     fn new() -> Self {
-        Self { value: 0 }
+        Self {
+            value: 0,
+            s: "".into(),
+        }
     }
 
     fn title(&self) -> String {
@@ -25,6 +30,7 @@ impl Sandbox for Counter {
 
     fn view(&self) -> Element<Message> {
         column!(
+            text_input("Type something.", &self.s).on_input(|x| Message::InputReceived(x)),
             button("+").on_press(Message::IncrementPressed),
             text(self.value).size(50),
             button("-").on_press(Message::DecrementPressed),
@@ -42,6 +48,9 @@ impl Sandbox for Counter {
             }
             Message::DecrementPressed => {
                 self.value -= 1;
+            }
+            Message::InputReceived(s) => {
+                self.s = s;
             }
         }
     }
