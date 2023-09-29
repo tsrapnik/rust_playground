@@ -1,9 +1,10 @@
 use self::theme::Theme;
 use self::widget::Element;
 use iced::{
+    application::StyleSheet,
     executor,
     widget::{button, column, text, text_input},
-    Application, Command, Settings,
+    Application, Color, Command, Settings,
 };
 
 struct Counter {
@@ -45,9 +46,11 @@ impl Application for Counter {
         let min_button_0 = button("-")
             .on_press(Message::DecrementPressed)
             .style(theme::Button::Primary);
+        let super_custom_style =
+            Box::new(SuperCustomButton) as Box<dyn button::StyleSheet<Style = Theme>>;
         let min_button_1 = button("-")
             .on_press(Message::DecrementPressed)
-            .style(theme::Button::Secondary);
+            .style(theme::Button::Custom(super_custom_style));
         column!(
             text_input.on_input(|x| Message::InputReceived(x)),
             button("+")
@@ -80,16 +83,28 @@ fn main() {
     Counter::run(Settings::default()).unwrap();
 }
 
+struct SuperCustomButton;
+impl button::StyleSheet for SuperCustomButton {
+    type Style = Theme;
+
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Color::from_rgb(0.3, 0.3, 0.8).into()),
+            ..Default::default()
+        }
+    }
+}
+
 mod widget {
     #![allow(dead_code)]
-    use crate::{theme::Theme, Message};
+    use crate::theme::Theme;
 
     pub type Renderer = iced::Renderer<Theme>;
     pub type Element<'a, Message> = iced::Element<'a, Message, Renderer>;
     pub type Button<'a, Message> = iced::widget::Button<'a, Message, Renderer>;
     pub type TextInput<'a, Message> = iced::widget::TextInput<'a, Message, Renderer>;
     pub type Text<'a> = iced::widget::Text<'a, Renderer>;
-    pub type Column<'a> = iced::widget::Column<'a, Message, Renderer>;
+    pub type Column<'a, Message> = iced::widget::Column<'a, Message, Renderer>;
 }
 
 mod theme {
@@ -113,11 +128,18 @@ mod theme {
         }
     }
 
-    #[derive(Debug, Clone, Copy, Default)]
+    #[derive(Default)]
     pub enum Button {
         #[default]
         Primary,
         Secondary,
+        Custom(Box<dyn button::StyleSheet<Style = Theme>>),
+    }
+
+    impl Button {
+        pub fn custom(style_sheet: impl button::StyleSheet<Style = Theme> + 'static) -> Self {
+            Self::Custom(Box::new(style_sheet))
+        }
     }
 
     impl button::StyleSheet for Theme {
@@ -133,6 +155,7 @@ mod theme {
                     background: Some(Color::from_rgb(0.3, 0.8, 0.3).into()),
                     ..Default::default()
                 },
+                Button::Custom(custom) => custom.active(self),
             }
         }
     }
