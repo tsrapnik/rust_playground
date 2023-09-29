@@ -1,9 +1,7 @@
-use anyhow::Result;
-use std::{error::Error, fmt, fmt::Display};
-
 use iced::{
+    theme,
     widget::{button, column, radio, text, text_input},
-    Element, Sandbox,
+    Color, Element, Sandbox, Settings,
 };
 
 struct Counter {
@@ -32,13 +30,41 @@ impl Sandbox for Counter {
         String::from("test application")
     }
 
+    fn theme(&self) -> iced::Theme {
+        let mut my_palette = theme::Theme::Dark.palette();
+        my_palette.background = Color::from_rgb(1.0, 1.0, 1.0);
+        my_palette.primary = Color::from_rgb(1.0, 0.0, 1.0);
+        my_palette.danger = Color::from_rgb(1.0, 0.0, 0.0);
+        my_palette.success = Color::from_rgb(0.0, 1.0, 0.0);
+        my_palette.text = Color::from_rgb(0.2, 0.2, 0.2);
+
+        theme::Theme::custom(my_palette)
+    }
+
     fn view(&self) -> Element<Message> {
         let text_input = text_input("Type something.", &self.s);
+        let min_button_0 = button("-")
+            .on_press(Message::DecrementPressed)
+            .style(theme::Button::Primary);
+        let min_button_1 = button("-")
+            .on_press(Message::DecrementPressed)
+            .style(theme::Button::Secondary);
+        let min_button_2 = button("-")
+            .on_press(Message::DecrementPressed)
+            .style(theme::Button::Positive);
+        let min_button_3 = button("-")
+            .on_press(Message::DecrementPressed)
+            .style(theme::Button::Destructive);
         column!(
             text_input.on_input(|x| Message::InputReceived(x)),
-            button("+").on_press(Message::IncrementPressed),
+            button("+")
+                .on_press(Message::IncrementPressed)
+                .style(theme::Button::Text),
             text(self.value).size(50),
-            button("-").on_press(Message::DecrementPressed),
+            min_button_0,
+            min_button_1,
+            min_button_2,
+            min_button_3,
             radio(String::from("label"), true, None, |_x| {
                 Message::DecrementPressed
             }),
@@ -62,62 +88,5 @@ impl Sandbox for Counter {
 }
 
 fn main() {
-    // Counter::run(Settings::default()).unwrap();
-    println!("{:?}", error_wrapper(WhichError::First));
-    println!("{:?}", error_wrapper(WhichError::Second));
-    println!("{:?}", error_wrapper(WhichError::None));
-}
-
-#[derive(Debug)]
-struct MyError1 {
-    number: u32,
-}
-
-impl Display for MyError1 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "error number {}", self.number)
-    }
-}
-
-impl Error for MyError1 {}
-
-#[derive(Debug)]
-struct MyError2 {
-    number: u32,
-}
-
-impl Display for MyError2 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "error number {}", self.number)
-    }
-}
-
-impl Error for MyError2 {}
-
-fn error_or_not_1(throw_error: bool) -> Result<u32, MyError1> {
-    if throw_error {
-        Err(MyError1 { number: 4 })
-    } else {
-        Ok(8)
-    }
-}
-
-fn error_or_not_2(throw_error: bool) -> Result<u32, MyError2> {
-    if throw_error {
-        Err(MyError2 { number: 6 })
-    } else {
-        Ok(10)
-    }
-}
-
-enum WhichError {
-    First,
-    Second,
-    None,
-}
-
-fn error_wrapper(which_error: WhichError) -> Result<u32> {
-    let x = error_or_not_1(matches!(which_error, WhichError::First))?;
-    let y = error_or_not_2(matches!(which_error, WhichError::Second))?;
-    Ok(u32::max(x, y))
+    Counter::run(Settings::default()).unwrap();
 }
