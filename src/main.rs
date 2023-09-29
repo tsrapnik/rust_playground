@@ -1,7 +1,6 @@
 use self::theme::Theme;
 use self::widget::Element;
 use iced::{
-    application::StyleSheet,
     executor,
     widget::{button, column, text, text_input},
     Application, Color, Command, Settings,
@@ -46,11 +45,9 @@ impl Application for Counter {
         let min_button_0 = button("-")
             .on_press(Message::DecrementPressed)
             .style(theme::Button::Primary);
-        let super_custom_style =
-            Box::new(SuperCustomButton) as Box<dyn button::StyleSheet<Style = Theme>>;
         let min_button_1 = button("-")
             .on_press(Message::DecrementPressed)
-            .style(theme::Button::Custom(super_custom_style));
+            .style(theme::Button::custom(CustomButtonStyle));
         column!(
             text_input.on_input(|x| Message::InputReceived(x)),
             button("+")
@@ -83,8 +80,8 @@ fn main() {
     Counter::run(Settings::default()).unwrap();
 }
 
-struct SuperCustomButton;
-impl button::StyleSheet for SuperCustomButton {
+struct CustomButtonStyle;
+impl button::StyleSheet for CustomButtonStyle {
     type Style = Theme;
 
     fn active(&self, _style: &Self::Style) -> button::Appearance {
@@ -132,7 +129,6 @@ mod theme {
     pub enum Button {
         #[default]
         Primary,
-        Secondary,
         Custom(Box<dyn button::StyleSheet<Style = Theme>>),
     }
 
@@ -151,10 +147,6 @@ mod theme {
                     background: Some(Color::from_rgb(0.8, 0.3, 0.3).into()),
                     ..Default::default()
                 },
-                Button::Secondary => button::Appearance {
-                    background: Some(Color::from_rgb(0.3, 0.8, 0.3).into()),
-                    ..Default::default()
-                },
                 Button::Custom(custom) => custom.active(self),
             }
         }
@@ -169,7 +161,7 @@ mod theme {
     impl text_input::StyleSheet for Theme {
         type Style = TextInput;
 
-        fn active(&self, style: &Self::Style) -> text_input::Appearance {
+        fn active(&self, _style: &Self::Style) -> text_input::Appearance {
             text_input::Appearance {
                 background: Color::from_rgb(0.3, 0.8, 0.3).into(),
                 border_radius: 1.0.into(),
@@ -179,7 +171,7 @@ mod theme {
             }
         }
 
-        fn focused(&self, style: &Self::Style) -> text_input::Appearance {
+        fn focused(&self, _style: &Self::Style) -> text_input::Appearance {
             text_input::Appearance {
                 background: Color::from_rgb(0.3, 0.8, 0.3).into(),
                 border_radius: 1.0.into(),
@@ -189,23 +181,23 @@ mod theme {
             }
         }
 
-        fn placeholder_color(&self, style: &Self::Style) -> Color {
+        fn placeholder_color(&self, _style: &Self::Style) -> Color {
             Color::from_rgb(1.0, 0.0, 0.0).into()
         }
 
-        fn value_color(&self, style: &Self::Style) -> Color {
+        fn value_color(&self, _style: &Self::Style) -> Color {
             Color::from_rgb(0.0, 0.0, 0.0).into()
         }
 
-        fn disabled_color(&self, style: &Self::Style) -> Color {
+        fn disabled_color(&self, _style: &Self::Style) -> Color {
             Default::default()
         }
 
-        fn selection_color(&self, style: &Self::Style) -> Color {
+        fn selection_color(&self, _style: &Self::Style) -> Color {
             Default::default()
         }
 
-        fn disabled(&self, style: &Self::Style) -> text_input::Appearance {
+        fn disabled(&self, _style: &Self::Style) -> text_input::Appearance {
             text_input::Appearance {
                 background: Color::from_rgb(0.3, 0.8, 0.3).into(),
                 border_radius: 1.0.into(),
