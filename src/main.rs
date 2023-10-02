@@ -38,7 +38,9 @@ impl Application for Counter {
         String::from("test application")
     }
 
-    // fn theme(&self) -> iced::Theme {}
+    fn theme(&self) -> Theme {
+        Theme::new(Color::from_rgb(0.8, 0.8, 0.0))
+    }
 
     fn view(&self) -> Element<Message> {
         let text_input = text_input("Type something.", &self.s);
@@ -84,9 +86,27 @@ struct CustomButtonStyle;
 impl button::StyleSheet for CustomButtonStyle {
     type Style = Theme;
 
-    fn active(&self, _style: &Self::Style) -> button::Appearance {
+    fn active(&self, style: &Self::Style) -> button::Appearance {
         button::Appearance {
-            background: Some(Color::from_rgb(0.3, 0.3, 0.8).into()),
+            background: Some(style.base_color().into()),
+            text_color: Color::from_rgb(0.0, 0.0, 1.0),
+            ..Default::default()
+        }
+    }
+    fn hovered(&self, style: &Self::Style) -> button::Appearance {
+        // let color = Color::from(style.base_color().into_linear().map(|x| 0.3 * x)).into();
+        button::Appearance {
+            // background: Some(color),
+            background: Some(Color::from_rgb(0.0, 0.0, 0.5).into()),
+            text_color: Color::from_rgb(0.0, 0.0, 0.5),
+            ..Default::default()
+        }
+    }
+    fn pressed(&self, style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            // background: Some(color),
+            background: Some(Color::from_rgb(0.0, 0.0, 0.5).into()),
+            text_color: Color::from_rgb(0.0, 0.0, 0.5),
             ..Default::default()
         }
     }
@@ -112,7 +132,18 @@ mod theme {
     };
 
     #[derive(Debug, Clone, Copy, Default)]
-    pub struct Theme;
+    pub struct Theme {
+        base_color: Color,
+    }
+
+    impl Theme {
+        pub fn new(base_color: Color) -> Theme {
+            Theme { base_color }
+        }
+        pub fn base_color(&self) -> Color {
+            self.base_color
+        }
+    }
 
     impl application::StyleSheet for Theme {
         type Style = ();
