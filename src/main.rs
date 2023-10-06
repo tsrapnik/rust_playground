@@ -11,6 +11,7 @@ fn main() -> iced::Result {
 
 struct Editor {
     content: text_editor::Content,
+    error: Option<io::ErrorKind>,
 }
 
 #[derive(Debug, Clone)]
@@ -29,6 +30,7 @@ impl Application for Editor {
         (
             Self {
                 content: text_editor::Content::with(include_str!("main.rs")),
+                error: None,
             },
             Command::perform(
                 load_file(format!("{}/src/main.rs", env!("CARGO_MANIFEST_DIR"))),
@@ -44,11 +46,8 @@ impl Application for Editor {
     fn update(&mut self, message: Self::Message) -> Command<Message> {
         match message {
             Message::Edit(action) => self.content.edit(action),
-            Message::FileOpened(result) => {
-                if let Ok(content) = result {
-                    self.content = text_editor::Content::with(&content)
-                }
-            }
+            Message::FileOpened(Ok(content)) => self.content = text_editor::Content::with(&content),
+            Message::FileOpened(Err(error)) => self.error = Some(error),
         }
 
         Command::none()
@@ -72,9 +71,18 @@ impl Application for Editor {
     }
 }
 
+async fn pick_file() -> Result<Arc<String>, Error> {}
+
+// We use Arc<String> cause the string might be big and can be cloned in iced framework, which will be a lot cheaper with an arc.
 async fn load_file(path: impl AsRef<Path>) -> Result<Arc<String>, io::ErrorKind> {
     tokio::fs::read_to_string(path)
         .await
         .map(Arc::new)
         .map_err(|error| error.kind())
+}
+
+#[derive(Debug, Clone)]
+enum Error {
+    DialogClosed,
+    IO(io::ErrorKind),
 }
